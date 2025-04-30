@@ -1,20 +1,23 @@
 pipeline {
     agent any
+
+    environment {
+        IMAGE_NAME = 'ganesh6988/shoppingwebsite'
+    }
+
     stages {
-        stage('Detect OS') {
+        stage('Clone') {
             steps {
-                
-                bat 'ver' // Works only on Windows
+                echo "🔵 Cloning repository..."
+                checkout scm
             }
         }
-    }
-}
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo '🔵 Building Docker image...'
-                    bat 'docker build -t frontend-app:latest .'
+                    echo "🔵 Building Docker image..."
+                    sh 'docker build -t $IMAGE_NAME .'
                 }
             }
         }
@@ -22,30 +25,26 @@ pipeline {
         stage('Run Container') {
             steps {
                 script {
-                    echo '🔵 Running Docker container...'
-                    bat 'docker run -d -p 5050:80 frontend-app:latest'
+                    echo "🔵 Running Docker container..."
+                    sh 'docker run -d -p 8080:80 $IMAGE_NAME'
                 }
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        echo '🔵 Logging into Docker Hub and pushing image...'
-                        bat '''
-                            echo %DOCKER_PASS% | docker login --username %DOCKER_USER% --password-stdin
-                            docker tag frontend-app:latest %DOCKER_USER%/frontend-app:latest
-                            docker push %DOCKER_USER%/frontend-app:latest
-                        '''
-                    }
+                script {
+                    echo "🔵 Logging into Docker Hub..."
+                    sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                    echo "🔵 Pushing image to Docker Hub..."
+                    sh 'docker push $IMAGE_NAME'
                 }
             }
         }
 
         stage('Done') {
             steps {
-                echo '✅ Build, Run, and Push Complete!'
+                echo "✅ Pipeline completed successfully!"
             }
         }
     }
