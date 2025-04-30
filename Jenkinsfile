@@ -17,7 +17,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🔨 Building Docker image...'
-                sh 'docker build -t $IMAGE_NAME:latest .'
+                sh  'docker build --progress=plain -t $IMAGE_NAME:latest .'
             }
         }
 
