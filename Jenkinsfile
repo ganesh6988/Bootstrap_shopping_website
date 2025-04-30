@@ -18,9 +18,9 @@ pipeline {
     steps {
         script {
             echo '🔵 Checking workspace...'
-            bat 'dir'
+            sh 'dir'
             echo '🔵 Building Docker image...'
-            bat '''
+            sh '''
                 if exist Dockerfile (
                     docker build -t %IMAGE_NAME% .
                 ) else (
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 script {
                     echo '🔵 Running Docker container...'
-                    bat '''
+                    sh '''
                         docker stop shopping || echo 🔵 No existing container to stop.
                         docker rm shopping || echo 🔵 No existing container to remove.
                         docker run -d -p %DOCKER_PORTS% --name shopping %IMAGE_NAME%
@@ -51,7 +51,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
                         echo '🔵 Logging into Docker Hub and pushing image...'
-                        bat '''
+                        sh '''
                             echo %DOCKER_PASS% | docker login --username %DOCKER_USER% --password-stdin
                             docker tag %IMAGE_NAME% %DOCKER_USER%/shopping:latest
                             docker push %DOCKER_USER%/shopping:latest
