@@ -49,7 +49,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ Deployment complete. Site should be live at http://localhost:8086'
+            echo '✅ Deployment complete. Site should be live at http://localhost:8087'
         }
         failure {
             echo '❌ Build or deployment failed.'
