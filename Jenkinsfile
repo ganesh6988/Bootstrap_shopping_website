@@ -12,16 +12,16 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🔵 Building Docker image...'
-                bat 'docker build -t frontend-app:latest .'
+                sh 'docker build -t frontend-app:latest .'
             }
         }
 
         stage('Run Docker Container') {
             steps {
                 echo '🔵 Running Docker container...'
-                bat 'docker stop frontend-container || exit 0'
-                bat 'docker rm frontend-container || exit 0'
-                bat 'docker run -d --name frontend-container -p 5050:80 frontend-app:latest'
+                sh 'docker stop frontend-container || true'
+                sh 'docker rm frontend-container || true'
+                sh 'docker run -d --name frontend-container -p 5050:80 frontend-app:latest'
             }
         }
 
