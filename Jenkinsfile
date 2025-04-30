@@ -14,24 +14,21 @@ pipeline {
             }
         }
 
-      stage('Build Docker Image') {
+ stage('Build Docker Image') {
     steps {
         script {
-            echo '🔵 Checking workspace...'
-            sh 'dir'
             echo '🔵 Building Docker image...'
             sh '''
-                if exist Dockerfile (
-                    docker build -t %IMAGE_NAME% .
-                ) else (
-                    echo 🔴 Dockerfile not found in workspace root.
-                    exit /b 1
-                )
+                if [ -f Dockerfile ]; then
+                    docker build -t $IMAGE_NAME .
+                else
+                    echo "🔴 Dockerfile not found in workspace root."
+                    exit 1
+                fi
             '''
         }
     }
 }
-
 
         stage('Run Container') {
             steps {
