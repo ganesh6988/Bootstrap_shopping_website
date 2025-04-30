@@ -1,13 +1,14 @@
 pipeline {
     agent any
-
     stages {
-        stage('Clone') {
+        stage('Detect OS') {
             steps {
-                echo '🔵 Cloning repository...'
-                checkout scm
+                
+                bat 'ver' // Works only on Windows
             }
         }
+    }
+}
 
         stage('Build Docker Image') {
             steps {
