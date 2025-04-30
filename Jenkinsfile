@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('b93a9ca9-18e7-4cdc-b3ed-ab1eeca5e21f') // Replace with your Jenkins credentials ID
+        IMAGE_NAME = 'ganesh6988/shoppingwebsite'
+    }
+
     stages {
         stage('Clone') {
             steps {
@@ -11,41 +16,42 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    echo '🔵 Building Docker image...'
-                    bat 'docker build -t mywebsite:latest .'
-                }
+                echo '🔵 Building Docker image...'
+                sh 'docker build -t $IMAGE_NAME:latest .'
             }
         }
 
         stage('Run Container') {
             steps {
-                script {
-                    echo '🔵 Running Docker container...'
-                    bat 'docker run -d -p 5050:80 mywebsite:latest'
-                }
+                echo '🟢 Running Docker container...'
+                sh 'docker run -d -p 8085:80 --name shopping_container $IMAGE_NAME:latest'
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        echo '🔵 Logging into Docker Hub and pushing image...'
-                        bat '''
-                            echo %DOCKER_PASS% | docker login --username %DOCKER_USER% --password-stdin
-                            docker tag mywebsite:latest %DOCKER_USER%/mywebsite:latest
-                            docker push %DOCKER_USER%/mywebsite:latest
-                        '''
-                    }
-                }
+                echo '🟡 Pushing Docker image to Docker Hub...'
+                sh '''
+                    echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
+                    docker push $IMAGE_NAME:latest
+                '''
             }
         }
 
         stage('Done') {
             steps {
-                echo '✅ Build, Run, and Push Complete!'
+                echo '✅ Pipeline completed!'
             }
+        }
+    }
+
+    post {
+        always {
+            echo '🧹 Cleaning up...'
+            sh '''
+                docker stop shopping_container || true
+                docker rm shopping_container || true
+            '''
         }
     }
 }
