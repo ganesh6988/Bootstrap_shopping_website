@@ -6,6 +6,17 @@ pipeline {
         CONTAINER_NAME = 'frontend-app-container'
         DOCKERHUB_REPO = 'frontend-app' // Your repo name on Docker Hub
     }
+     agent any
+
+    stages {
+        stage('Check Docker') {
+            steps {
+                script {
+                    sh 'docker --version'
+                }
+            }
+        }
+    }
 
     stages {
 
