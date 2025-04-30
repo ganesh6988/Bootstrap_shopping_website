@@ -2,57 +2,69 @@ pipeline {
     agent any
 
     environment {
-        GIT_REPO = 'https://github.com/ganesh6988/Bootstrap_shopping_website'
-        BRANCH = 'main'
-        IMAGE_NAME = 'bootstrap_website_image'
-        CONTAINER_NAME = 'bootstrap_container'
-        HOST_PORT = '8087'
-        CONTAINER_PORT = '80'
+        IMAGE_NAME = 'frontend-app'
+        CONTAINER_NAME = 'frontend-app-container'
+        DOCKERHUB_REPO = 'frontend-app' // Your repo name on Docker Hub
     }
 
     stages {
-        stage('Clone Repository') {
+
+        stage('Clone') {
             steps {
-                echo 'Cloning GitHub repo...'
-                git branch: "${BRANCH}", url: "${GIT_REPO}"
+                echo '🔵 Cloning repository...'
+                checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
-                sh "docker build -t ${IMAGE_NAME} ."
+                script {
+                    echo '🔵 Building Docker image...'
+                    sh "docker build -t ${IMAGE_NAME}:latest ."
+                }
             }
         }
 
         stage('Stop Previous Container') {
             steps {
-                echo 'Stopping existing container if running...'
-                sh "docker rm -f ${CONTAINER_NAME} || true"
+                script {
+                    echo '🛑 Stopping existing container if running...'
+                    sh """
+                        docker ps -q --filter "name=${CONTAINER_NAME}" | grep -q . && \
+                        docker stop ${CONTAINER_NAME} && docker rm ${CONTAINER_NAME} || echo 'No container to stop'
+                    """
+                }
             }
         }
 
-        stage('Run New Container') {
+        stage('Run Container') {
             steps {
-                echo 'Running new container...'
-                sh "docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}"
+                script {
+                    echo '🚀 Running new Docker container...'
+                    sh "docker run -d -p 5050:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}:latest"
+                }
             }
         }
 
-        stage('Verify Container') {
+        stage('Push to Docker Hub') {
             steps {
-                echo 'Verifying container is running...'
-                sh 'docker ps'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        echo '📤 Logging into Docker Hub and pushing image...'
+                        sh '''
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            docker tag frontend-app:latest $DOCKER_USER/${DOCKERHUB_REPO}:latest
+                            docker push $DOCKER_USER/${DOCKERHUB_REPO}:latest
+                        '''
+                    }
+                }
             }
         }
-    }
 
-    post {
-        success {
-            echo '✅ Deployment complete. Site should be live at http://localhost:8087'
-        }
-        failure {
-            echo '❌ Build or deployment failed.'
+        stage('Done') {
+            steps {
+                echo '✅ Build, Run, and Push Complete!'
+            }
         }
     }
 }
