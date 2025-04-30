@@ -1,11 +1,14 @@
-# Dockerfile (in project root)
+# Use a lightweight Nginx base image
 FROM nginx:alpine
 
+# Remove the default nginx index page
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy your project files (HTML, CSS, JS) to the nginx root directory
 COPY . /usr/share/nginx/html
 
-# Optional: remove default index
-RUN rm -f /usr/share/nginx/html/index.nginx-debian.html || true
-
+# Expose port 80 (Nginx default)
 EXPOSE 80
 
+# Run nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
