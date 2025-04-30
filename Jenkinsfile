@@ -1,5 +1,5 @@
 pipeline {
-    agent any  // Define agent here (only once)
+    agent any
 
     stages {
         stage('Clone') {
@@ -19,24 +19,16 @@ pipeline {
         stage('Run Container') {
             steps {
                 echo '🔵 Running Docker container...'
-                sh 'docker run -d -p 5050:80 frontend-app:latest'
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                echo '🔵 Pushing Docker image to Docker Hub...'
                 sh '''
-                    docker login --username $DOCKER_USER --password $DOCKER_PASS
-                    docker tag frontend-app:latest $DOCKER_USER/frontend-app:latest
-                    docker push $DOCKER_USER/frontend-app:latest
+                    docker rm -f frontend-container || true
+                    docker run -d --name frontend-container -p 5050:80 frontend-app:latest
                 '''
             }
         }
 
         stage('Done') {
             steps {
-                echo '✅ Build, Run, and Push Complete!'
+                echo '✅ Deployment Complete. Visit http://localhost:5050'
             }
         }
     }
