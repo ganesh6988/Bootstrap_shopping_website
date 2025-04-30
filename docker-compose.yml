@@ -10,3 +10,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock  # 👈 Important line!
 volumes:
   jenkins_home:
+  volumes:
+  - /var/run/docker.sock:/var/run/docker.sock  # ✅ Allows Jenkins to use host Docker
+
