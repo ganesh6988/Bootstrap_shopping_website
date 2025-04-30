@@ -12,23 +12,24 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🔵 Building Docker image...'
-                sh 'docker build -t frontend-app:latest .'
+                bat 'docker build -t frontend-app:latest .'
             }
         }
 
-        stage('Run Container') {
+        stage('Run Docker Container') {
             steps {
                 echo '🔵 Running Docker container...'
-                sh '''
-                    docker rm -f frontend-container || true
-                    docker run -d --name frontend-container -p 5050:80 frontend-app:latest
+                bat '''
+                docker stop frontend-container || exit 0
+                docker rm frontend-container || exit 0
+                docker run -d --name frontend-container -p 5050:80 frontend-app:latest
                 '''
             }
         }
 
         stage('Done') {
             steps {
-                echo '✅ Deployment Complete. Visit http://localhost:5050'
+                echo '✅ Your site is live at http://localhost:5050'
             }
         }
     }
