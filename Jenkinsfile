@@ -60,7 +60,9 @@ pipeline {
     stages {
         stage('Test Docker') {
             steps {
-                sh 'docker --version'
+                script {
+                    sh 'docker --version'
+                }
             }
         }
     }
