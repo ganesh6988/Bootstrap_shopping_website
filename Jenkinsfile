@@ -1,34 +1,38 @@
 pipeline {
     agent any
-
     stages {
-        stage('Clone') {
+        stage('Docker Cleanup') {
             steps {
-                echo '🔵 Cloning repository...'
-                checkout scm
+                bat '''
+                docker stop project-sparkle || echo Container not running
+                docker rm project-sparkle || echo No container to remove
+                docker rmi -f project-sparkle || echo No image to remove
+                '''
             }
         }
-
         stage('Build Docker Image') {
             steps {
-                echo '🔵 Building Docker image...'
-                sh 'docker build -t frontend-app:latest .'
+                bat 'docker build -t project-sparkle .'
             }
         }
-
-        stage('Run Docker Container') {
+        stage('Run Container') {
             steps {
-                echo '🔵 Running Docker container...'
-                sh 'docker stop frontend-container || true'
-                sh 'docker rm frontend-container || true'
-                sh 'docker run -d --name frontend-container -p 5050:80 frontend-app:latest'
+                bat '''
+                timeout /t 5 /nobreak
+                docker run -d -p 3000:80 --name project-sparkle project-sparkle
+                '''
             }
         }
-
-        stage('Done') {
+        stage('Push to Docker Hub') {
             steps {
-                echo '✅ Website should be available at http://localhost:5050'
+                withCredentials([usernamePassword(credentialsId: 'Dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat '''
+                        docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                        docker tag project-sparkle %DOCKER_USER%/project-sparkle
+                        docker push %DOCKER_USER%/project-sparkle
+                    '''
+                }
             }
-        }
+        }        
     }
 }
