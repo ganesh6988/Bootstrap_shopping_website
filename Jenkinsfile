@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/ganesh6988/Bootstrap_shopping_website.git'
+                git branch: 'main', url: 'https://github.com/ganesh6988/Bootstrap_shopping_website.git'
             }
         }
 
