@@ -2,22 +2,13 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('b93a9ca9-18e7-4cdc-b3ed-ab1eeca5e21f')
         IMAGE_NAME = 'shoppingwebsite'
     }
 
     stages {
         stage('Check Docker Version') {
             steps {
-                echo '🔍 Checking Docker version...'
-                sh '''
-                    if ! command -v docker &> /dev/null
-                    then
-                        echo "❌ Docker not found! Please install Docker on this agent."
-                        exit 1
-                    fi
-                    docker --version
-                '''
+                sh 'docker --version'
             }
         }
 
@@ -49,10 +40,12 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 echo '📤 Pushing Docker image to Docker Hub...'
-                sh '''
-                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                    docker push $IMAGE_NAME:latest
-                '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh '''
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                        docker push $IMAGE_NAME:latest
+                    '''
+                }
             }
         }
 
