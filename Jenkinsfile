@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('b93a9ca9-18e7-4cdc-b3ed-ab1eeca5e21f')
-        IMAGE_NAME = 'davincitones/shoppingwebsite'
+        IMAGE_NAME = 'shoppingwebsite'
     }
 
     stages {
