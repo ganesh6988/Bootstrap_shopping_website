@@ -7,6 +7,13 @@ pipeline {
     }
 
     stages {
+        stage('Check Docker Version') {
+            steps {
+                echo '🔍 Checking Docker version...'
+                sh 'docker --version'
+            }
+        }
+
         stage('Clone') {
             steps {
                 echo '🔵 Cloning repository...'
@@ -17,7 +24,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🔨 Building Docker image...'
-                sh 'docker build -t %IMAGE_NAME%:latest .'
+                sh 'docker build -t $IMAGE_NAME:latest .'
             }
         }
 
@@ -25,9 +32,9 @@ pipeline {
             steps {
                 echo '🚀 Running Docker container...'
                 sh '''
-                    docker stop shopping_container || exit 0
-                    docker rm shopping_container || exit 0
-                    docker run -d -p 8082:80 --name shopping_container %IMAGE_NAME%:latest
+                    docker stop shopping_container || true
+                    docker rm shopping_container || true
+                    docker run -d -p 8082:80 --name shopping_container $IMAGE_NAME:latest
                 '''
             }
         }
@@ -36,8 +43,8 @@ pipeline {
             steps {
                 echo '📤 Pushing Docker image to Docker Hub...'
                 sh '''
-                    echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin
-                    docker push %IMAGE_NAME%:latest
+                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                    docker push $IMAGE_NAME:latest
                 '''
             }
         }
@@ -53,8 +60,8 @@ pipeline {
         always {
             echo '🧹 Cleaning up Docker container (if running)...'
             sh '''
-                docker stop shopping_container || exit 0
-                docker rm shopping_container || exit 0
+                docker stop shopping_container || true
+                docker rm shopping_container || true
             '''
         }
     }
