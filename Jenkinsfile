@@ -17,14 +17,14 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🔨 Building Docker image...'
-                bat 'docker build -t %IMAGE_NAME%:latest .'
+                sh 'docker build -t %IMAGE_NAME%:latest .'
             }
         }
 
         stage('Run Container') {
             steps {
                 echo '🚀 Running Docker container...'
-                bat '''
+                sh '''
                     docker stop shopping_container || exit 0
                     docker rm shopping_container || exit 0
                     docker run -d -p 8082:80 --name shopping_container %IMAGE_NAME%:latest
