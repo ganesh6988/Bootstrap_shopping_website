@@ -35,7 +35,7 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 echo '📤 Pushing Docker image to Docker Hub...'
-                bat '''
+                sh '''
                     echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin
                     docker push %IMAGE_NAME%:latest
                 '''
