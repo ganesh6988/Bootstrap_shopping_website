@@ -52,7 +52,7 @@ pipeline {
     post {
         always {
             echo '🧹 Cleaning up Docker container (if running)...'
-            bat '''
+            sh '''
                 docker stop shopping_container || exit 0
                 docker rm shopping_container || exit 0
             '''
