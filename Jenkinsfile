@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'docker-agent' } // Only run on a node labeled 'docker-agent'
+    agent any// Only run on a node labeled 'docker-agent'
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('b93a9ca9-18e7-4cdc-b3ed-ab1eeca5e21f')
