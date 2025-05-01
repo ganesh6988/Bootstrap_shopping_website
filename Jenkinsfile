@@ -1,13 +1,16 @@
 pipeline {
-    agent { label 'docker-agent' } // Only run on a node labeled 'docker-agent'
+    agent any
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('b93a9ca9-18e7-4cdc-b3ed-ab1eeca5e21f')
-        IMAGE_NAME = 'shoppingwebsite'
+        IMAGE_NAME = 'ganesh6988/shoppingwebsite'
+        CONTAINER_NAME = 'shopping_container'
+        HOST_PORT = '8082'
+        CONTAINER_PORT = '80'
     }
 
     stages {
-        stage('Clone') {
+        stage('Clone Repository') {
             steps {
                 echo '🔵 Cloning repository...'
                 checkout scm
@@ -17,18 +20,24 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo '🔨 Building Docker image...'
-                sh  'docker build --progress=plain -t $IMAGE_NAME:latest .'
+                sh 'docker build -t $IMAGE_NAME:latest .'
             }
         }
 
-        stage('Run Container') {
+        stage('Stop & Remove Old Container') {
             steps {
-                echo '🚀 Running Docker container...'
+                echo '🧹 Stopping and removing old container (if any)...'
                 sh '''
-                    docker stop shopping_container || true
-                    docker rm shopping_container || true
-                    docker run -d -p 8082:80 --name shopping_container $IMAGE_NAME:latest
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
                 '''
+            }
+        }
+
+        stage('Run New Container') {
+            steps {
+                echo '🚀 Running new container...'
+                sh 'docker run -d -p $HOST_PORT:$CONTAINER_PORT --name $CONTAINER_NAME $IMAGE_NAME:latest'
             }
         }
 
@@ -42,20 +51,19 @@ pipeline {
             }
         }
 
-        stage('Done') {
+        stage('Completed') {
             steps {
-                echo '✅ Pipeline completed!'
+                echo '✅ Deployment completed successfully!'
             }
         }
     }
 
     post {
+        failure {
+            echo '❌ Build failed. Please check the error logs above.'
+        }
         always {
-            echo '🧹 Cleaning up Docker container (if running)...'
-            sh '''
-                docker stop shopping_container || true
-                docker rm shopping_container || true
-            '''
+            echo '🧼 Final cleanup check (only if container exists)...'
         }
     }
 }
