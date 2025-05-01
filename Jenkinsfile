@@ -27,7 +27,7 @@ pipeline {
                 sh '''
                     docker stop shopping_container || true
                     docker rm shopping_container || true
-                    docker run -d -p 8085:80 --name shopping_container $IMAGE_NAME:latest
+                    docker run -d -p 8082:80 --name shopping_container $IMAGE_NAME:latest
                 '''
             }
         }
