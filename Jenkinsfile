@@ -6,19 +6,20 @@ pipeline {
         IMAGE_NAME = 'shoppingwebsite'
     }
 
-   stage('Check Docker Version') {
-    steps {
-        echo '🔍 Checking Docker version...'
-        sh '''
-            if ! command -v docker &> /dev/null
-            then
-                echo "❌ Docker not found! Please install Docker on this agent."
-                exit 1
-            fi
-            docker --version
-        '''
-    }
-}
+    stages {
+        stage('Check Docker Version') {
+            steps {
+                echo '🔍 Checking Docker version...'
+                sh '''
+                    if ! command -v docker &> /dev/null
+                    then
+                        echo "❌ Docker not found! Please install Docker on this agent."
+                        exit 1
+                    fi
+                    docker --version
+                '''
+            }
+        }
 
         stage('Clone') {
             steps {
